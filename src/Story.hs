@@ -4,11 +4,12 @@ import qualified Data.Aeson as JSON
 import qualified Data.Maybe as Maybe
 import qualified GHC.Generics as Generics
 import qualified Text.Printf as Printf
+import qualified Data.Text as Text
 
 data Story = Story { kind :: String
                    , story_type :: String
                    , estimate :: Maybe Int
-                   , current_state :: String
+                   , current_state :: State
                    , name :: String
                    } deriving (Generics.Generic)
 
@@ -22,3 +23,17 @@ instance Show Story where
 
 instance JSON.FromJSON Story
 
+
+data State = Unstarted
+           | Started
+           | Delivered
+           | Finished
+           | Rejected
+           deriving (Generics.Generic, Show)
+
+instance JSON.FromJSON State where
+  parseJSON = JSON.withText "State"
+                $ \state ->
+                    case state of
+                      "unstarted" -> return Unstarted
+                      unknown -> fail $ "state " ++ Text.unpack unknown ++ "is unknown"
