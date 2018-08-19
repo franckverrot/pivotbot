@@ -1,22 +1,20 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 module Lib
     ( trackerApi
     ) where
 
-import qualified GHC.Generics as Generics
 import qualified Network.HTTP.Client.TLS as TLS
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Types.Header as Header
-import qualified System.Environment as Env
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text as Text
-import qualified Text.Printf as Printf
 import qualified Data.Aeson as JSON
 import qualified Data.Maybe as Maybe
 import qualified Network.HTTP.Simple as Simple
-import Data.Function
+
+import Data.Function ((&))
+import ClientConfig
+import Story
 
 hTrackerTokenHeader :: Header.HeaderName
 hTrackerTokenHeader = "X-TrackerToken"
@@ -27,31 +25,9 @@ makeHeaders token =
       (hTrackerTokenHeader, BS.pack token)
     ]
 
-data Story = Story { kind :: String
-                   , story_type :: String
-                   , estimate :: Maybe Int
-                   , current_state :: String
-                   , name :: String
-                   } deriving (Generics.Generic)
-
-instance Show Story where
-  show story =
-    Printf.printf "[%-8s] %-64s (%s)" storyType storyName storyEstimate
-    where
-      storyType = story_type story
-      storyName = name story
-      storyEstimate = (Maybe.fromMaybe "-" (fmap show $ estimate story))
-
-instance JSON.FromJSON Story
-
-lookupEnv :: String -> IO String
-lookupEnv envVarName =
-    Env.lookupEnv envVarName >>=
-      maybe (fail $ "missing " ++ envVarName) return
-
-makeRequest :: String -> String -> Simple.Request
-makeRequest token projectId = do
-  let targetPath = "/services/v5/projects/" ++ projectId ++ "/stories"
+makeRequest :: ClientConfig -> Simple.Request
+makeRequest (ClientConfig apiToken projectId) = do
+  let targetPath = "/services/v5/projects/" ++ show projectId ++ "/stories"
   let targetUrl = "www.pivotaltracker.com"
   Simple.defaultRequest
     & Simple.setRequestHost targetUrl
@@ -59,14 +35,13 @@ makeRequest token projectId = do
     & Simple.setRequestSecure True
     & Simple.setRequestPath (BS.pack targetPath)
     & Simple.setRequestQueryString [("with_state", Just "unstarted")]
-    & Simple.setRequestHeader hTrackerTokenHeader [BS.pack token]
+    & Simple.setRequestHeader hTrackerTokenHeader [BS.pack apiToken]
 
 trackerApi :: IO ()
 trackerApi = do
-  token <- lookupEnv "TRACKER_API_TOKEN"
-  trackerProjectId <- lookupEnv "TRACKER_PROJECT_ID"
+  clientConfig <- ClientConfig.fetchClientConfig
 
-  let request = makeRequest token trackerProjectId
+  let request = makeRequest clientConfig
 
   response <- Simple.httpLBS request
   let body = Simple.getResponseBody response
