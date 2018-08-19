@@ -63,8 +63,6 @@ makeRequest token projectId = do
 
 trackerApi :: IO ()
 trackerApi = do
-  manager <- HTTP.newManager TLS.tlsManagerSettings
-
   token <- lookupEnv "TRACKER_API_TOKEN"
   trackerProjectId <- lookupEnv "TRACKER_PROJECT_ID"
 
