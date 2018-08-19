@@ -1,0 +1,58 @@
+name:                pivotbot
+version:             0.1.0.0
+github:              "franckverrot/pivotbot"
+license:             BSD3
+author:              "Franck Verrot"
+maintainer:          "franck@verrot.fr"
+copyright:           "GLPv3"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/franckverrot/pivotbot#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- http-client
+- http-client-tls
+- http-types
+- bytestring
+- case-insensitive
+- text
+- aeson
+- http-conduit
+
+library:
+  source-dirs: src
+
+executables:
+  pivotbot-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - pivotbot
+    - http-client
+    - http-client-tls
+
+tests:
+  pivotbot-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - pivotbot
