@@ -44,28 +44,31 @@ instance Show Story where
 
 instance JSON.FromJSON Story
 
+lookupEnv :: String -> IO String
+lookupEnv envVarName =
+    Env.lookupEnv envVarName >>=
+      maybe (fail $ "missing " ++ envVarName) return
+
+makeRequest :: String -> String -> Simple.Request
+makeRequest token projectId = do
+  let targetPath = "/services/v5/projects/" ++ projectId ++ "/stories"
+  let targetUrl = "www.pivotaltracker.com"
+  Simple.defaultRequest
+    & Simple.setRequestHost targetUrl
+    & Simple.setRequestPort 443
+    & Simple.setRequestSecure True
+    & Simple.setRequestPath (BS.pack targetPath)
+    & Simple.setRequestQueryString [("with_state", Just "unstarted")]
+    & Simple.setRequestHeader hTrackerTokenHeader [BS.pack token]
+
 trackerApi :: IO ()
 trackerApi = do
   manager <- HTTP.newManager TLS.tlsManagerSettings
 
-  let targetUrl = "www.pivotaltracker.com"
-  token <- do
-    Env.lookupEnv "TRACKER_API_TOKEN" >>=
-      maybe (fail $ "missing TRACKER_API_TOKEN") return
+  token <- lookupEnv "TRACKER_API_TOKEN"
+  trackerProjectId <- lookupEnv "TRACKER_PROJECT_ID"
 
-  trackerProjectId <- do
-    Env.lookupEnv "TRACKER_PROJECT_ID" >>=
-      maybe (fail $ "missing TRACKER_PROJECT_ID") return
-
-  let targetPath = "/services/v5/projects/" ++ trackerProjectId ++ "/stories"
-
-  let request = Simple.defaultRequest
-                & Simple.setRequestHost targetUrl
-                & Simple.setRequestPort 443
-                & Simple.setRequestSecure True
-                & Simple.setRequestPath (BS.pack targetPath)
-                & Simple.setRequestQueryString [("with_state", Just "unstarted")]
-                & Simple.setRequestHeader hTrackerTokenHeader [BS.pack token]
+  let request = makeRequest token trackerProjectId
 
   response <- Simple.httpLBS request
   let body = Simple.getResponseBody response
