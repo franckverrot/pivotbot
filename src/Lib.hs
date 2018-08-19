@@ -37,10 +37,8 @@ makeRequest (ClientConfig apiToken projectId) = do
     & Simple.setRequestQueryString [("with_state", Just "unstarted")]
     & Simple.setRequestHeader hTrackerTokenHeader [BS.pack apiToken]
 
-trackerApi :: IO ()
-trackerApi = do
-  clientConfig <- ClientConfig.fetchClientConfig
-
+trackerApi :: ClientConfig -> IO ()
+trackerApi clientConfig = do
   let request = makeRequest clientConfig
 
   response <- Simple.httpLBS request
