@@ -6,33 +6,33 @@ import ClientConfig (fetchClientConfig)
 import qualified System.Environment as Env
 import qualified Options.Applicative as Opts
 import Control.Applicative ((<**>))
-import Data.Semigroup ((<>))
 import Data.String (IsString, fromString)
-import qualified System.Exit as Exit (die)
+import qualified Data.Either as Either
+
+import Story
 
 
-type OptionCommand = Either String Command
-data Options = Options { action :: OptionCommand
-                       }
-                       deriving (Show)
+readStates :: Opts.ReadM State
+readStates = Opts.eitherReader decode
+               where
+                 decode :: String -> Either String State
+                 decode s = case s of
+                   "unstarted" -> Right Unstarted
+                   "started" -> Right Started
+                   unknown -> Left $ "unknown state \"" ++ unknown ++ "\""
 
-instance IsString OptionCommand where
-  fromString = \str -> case str of
-                         "list-stories" -> Right ListStories
-                         unknown -> Left $ unknown ++ " is not a valid command"
-
-parser :: Opts.Parser Options
-parser = Options
-           <$> Opts.strOption
-             ( Opts.long "action"
-             <> Opts.metavar "ACTION"
-             <> Opts.help "Action to be completed (list-stories, ..)" )
+parser :: Opts.Parser Command
+parser = showStoryParser Opts.<|> listStoriesParser
+  where showStoryParser =
+          (ShowStory <$> Opts.option Opts.auto (Opts.long "show-story"))
+        listStoriesParser =
+          (ListStories <$> Opts.option readStates (Opts.long "list-stories"))
 
 main :: IO ()
 main = do
-  options <- Opts.execParser opts
+  command <- Opts.execParser opts
 
-  either terminateProgram executeCommand (action options)
+  executeCommand command
 
   where
     opts = Opts.info (parser <**> Opts.helper)

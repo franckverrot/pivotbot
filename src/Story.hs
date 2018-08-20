@@ -58,4 +58,5 @@ instance JSON.FromJSON State where
                 $ \state ->
                     case state of
                       "unstarted" -> return Unstarted
+                      "started" -> return Started
                       unknown -> fail $ "state " ++ Text.unpack unknown ++ "is unknown"

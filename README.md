@@ -8,10 +8,13 @@
 ## Usage
 
 ```
-λ stack exec pivotbot-exe
+λ pivotbot – A Pivotal Tracker command-line tool
 
-Usage: pivotbot-exe --action ACTION
+Usage: pivotbot-exe (--show-story ARG | --list-stories ARG)
   Instant access to your stories
+
+Available options:
+  -h,--help                Show this help text
 ```
 
 ### Options
