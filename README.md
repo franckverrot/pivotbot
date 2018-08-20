@@ -1,6 +1,6 @@
 # pivotbot
 
-## Setup
+## Build
 
 `stack build`
 
@@ -17,11 +17,20 @@ Available options:
   -h,--help                Show this help text
 ```
 
+### Setup
+
+For the tool to be able to connect to your Pivotal Tracker project, you need to export:
+
+* `TRACKER_API_TOKEN`
+* `TRACKER_PROJECT_ID`
+
 ### Options
 
-`--action` : Actions availables:
-
-  * `list-stories`
+* `--show-story <id>` : Show story's details
+* `--list-stories <status>` : Show stories in that status
+  * (Supported) Statuses:
+    * `unstarted`
+    * `started`
 
 
 ## License
