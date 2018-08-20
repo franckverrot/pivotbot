@@ -28,8 +28,9 @@ makeHeaders token =
       (hTrackerTokenHeader, BS.pack token)
     ]
 
-makeRequest :: ClientConfig -> RequestParameters -> Simple.Request
-makeRequest (ClientConfig apiToken projectId) requestParams = do
+makeRequest :: IsRequestParams params => ClientConfig -> params -> Simple.Request
+makeRequest (ClientConfig apiToken projectId) params = do
+  let requestParams = toRequestParams params
   let targetPath = "/services/v5/projects/" ++ show projectId ++ (resource requestParams)
       targetUrl = "www.pivotaltracker.com"
       port = 443
@@ -47,7 +48,7 @@ makeRequest (ClientConfig apiToken projectId) requestParams = do
 
 trackerApi :: ClientConfig -> Command -> IO ()
 trackerApi clientConfig command = do
-  let request = makeRequest clientConfig $ commandToRequestParams command
+  let request = makeRequest clientConfig command
 
   response <- Simple.httpLBS request
   let body = Simple.getResponseBody response
