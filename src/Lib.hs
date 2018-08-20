@@ -46,6 +46,7 @@ makeRequest (ClientConfig apiToken projectId) requestParams = do
 type StoryId = Int
 data Command = ListStories
              | ShowStory StoryId
+             deriving (Show)
 
 data RequestParameters = RequestParameters { filters :: [(String, String)]
                                            , resource :: String

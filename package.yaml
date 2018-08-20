@@ -29,6 +29,7 @@ dependencies:
 - text
 - aeson
 - http-conduit
+- optparse-applicative
 
 library:
   source-dirs: src
