@@ -1,5 +1,14 @@
 # pivotbot
 
+pivotbot – A Pivotal Tracker command-line tool
+
+
+## Requirement
+
+* A Haskell compiler (stack-based setup is supported)
+* A Pivotal Tracker API token
+
+
 ## Build
 
 `stack build`
@@ -17,14 +26,16 @@ Available options:
   -h,--help                Show this help text
 ```
 
-### Setup
+
+## Setup
 
 For the tool to be able to connect to your Pivotal Tracker project, you need to export:
 
 * `TRACKER_API_TOKEN`
 * `TRACKER_PROJECT_ID`
 
-### Options
+
+## Options
 
 * `--show-story <id>` : Show story's details
 * `--list-stories <status>` : Show stories in that status
