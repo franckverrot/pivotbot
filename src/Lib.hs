@@ -16,6 +16,8 @@ import qualified Network.HTTP.Simple as Simple
 import Data.Function ((&))
 import ClientConfig
 import Story
+import Command
+import RequestParameters
 
 hTrackerTokenHeader :: Header.HeaderName
 hTrackerTokenHeader = "X-TrackerToken"
@@ -42,19 +44,6 @@ makeRequest (ClientConfig apiToken projectId) requestParams = do
     & Simple.setRequestQueryString queryString
     & Simple.setRequestHeader hTrackerTokenHeader [BS.pack apiToken]
 
-
-type StoryId = Int
-data Command = ListStories
-             | ShowStory StoryId
-             deriving (Show)
-
-data RequestParameters = RequestParameters { filters :: [(String, String)]
-                                           , resource :: String
-                                           }
-
-commandToRequestParams :: Command -> RequestParameters
-commandToRequestParams ListStories         = RequestParameters { resource = "/stories", filters = [("with_state", "unstarted")] }
-commandToRequestParams (ShowStory storyId) = RequestParameters { resource = "/stories/" ++ show storyId, filters = [] }
 
 trackerApi :: ClientConfig -> Command -> IO ()
 trackerApi clientConfig command = do
