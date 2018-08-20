@@ -1,5 +1,6 @@
 module Lib
     ( trackerApi
+    , Command(..)
     ) where
 
 import qualified Network.HTTP.Client.TLS as TLS
@@ -25,21 +26,38 @@ makeHeaders token =
       (hTrackerTokenHeader, BS.pack token)
     ]
 
-makeRequest :: ClientConfig -> Simple.Request
-makeRequest (ClientConfig apiToken projectId) = do
-  let targetPath = "/services/v5/projects/" ++ show projectId ++ "/stories"
-  let targetUrl = "www.pivotaltracker.com"
+makeRequest :: ClientConfig -> RequestParameters -> Simple.Request
+makeRequest (ClientConfig apiToken projectId) requestParams = do
+  let targetPath = "/services/v5/projects/" ++ show projectId ++ (resource requestParams)
+      targetUrl = "www.pivotaltracker.com"
+      port = 443
+      secure = True
+      path = (BS.pack targetPath)
+      queryString = fmap (\(x,y) -> (BS.pack x, Just $ BS.pack y)) $ filters requestParams
   Simple.defaultRequest
     & Simple.setRequestHost targetUrl
-    & Simple.setRequestPort 443
-    & Simple.setRequestSecure True
-    & Simple.setRequestPath (BS.pack targetPath)
-    & Simple.setRequestQueryString [("with_state", Just "unstarted")]
+    & Simple.setRequestPort port
+    & Simple.setRequestSecure secure
+    & Simple.setRequestPath path
+    & Simple.setRequestQueryString queryString
     & Simple.setRequestHeader hTrackerTokenHeader [BS.pack apiToken]
 
-trackerApi :: ClientConfig -> IO ()
-trackerApi clientConfig = do
-  let request = makeRequest clientConfig
+
+type StoryId = Int
+data Command = ListStories
+             | ShowStory StoryId
+
+data RequestParameters = RequestParameters { filters :: [(String, String)]
+                                           , resource :: String
+                                           }
+
+commandToRequestParams :: Command -> RequestParameters
+commandToRequestParams ListStories         = RequestParameters { resource = "/stories", filters = [("with_state", "unstarted")] }
+commandToRequestParams (ShowStory storyId) = RequestParameters { resource = "/stories/" ++ show storyId, filters = [] }
+
+trackerApi :: ClientConfig -> Command -> IO ()
+trackerApi clientConfig command = do
+  let request = makeRequest clientConfig $ commandToRequestParams command
 
   response <- Simple.httpLBS request
   let body = Simple.getResponseBody response

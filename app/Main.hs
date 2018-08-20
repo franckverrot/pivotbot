@@ -1,7 +1,7 @@
 module Main where
 
-import Lib
+import Lib (trackerApi, Command(..))
 import ClientConfig (fetchClientConfig)
 
 main :: IO ()
-main = fetchClientConfig >>= trackerApi
+main = fetchClientConfig >>= flip trackerApi ListStories
