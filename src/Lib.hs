@@ -46,14 +46,24 @@ makeRequest (ClientConfig apiToken projectId) params = do
     & Simple.setRequestHeader hTrackerTokenHeader [BS.pack apiToken]
 
 
-trackerApi :: ClientConfig -> Command -> IO ()
+trackerApi :: (HasResultType command, IsRequestParams command) => ClientConfig -> command -> IO ()
 trackerApi clientConfig command = do
   let request = makeRequest clientConfig command
 
   response <- Simple.httpLBS request
   let body = Simple.getResponseBody response
-  let stories = JSON.decode body :: Maybe [Story]
 
-  case stories of
-    Nothing -> putStrLn "Nothing to show!"
-    Just ary -> mapM_ (putStrLn . show) ary
+  case commandType command of
+    SingleEntry -> do
+      let story = JSON.decode body :: Maybe Story
+
+      case story of
+        Nothing -> putStrLn "Nothing to show!"
+        Just story -> putStrLn . showDetails $ story
+
+    MultipleEntry -> do
+      let stories = JSON.decode body :: Maybe [Story]
+
+      case stories of
+        Nothing -> putStrLn "Nothing to show!"
+        Just ary -> mapM_ (putStrLn . show) ary

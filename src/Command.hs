@@ -10,6 +10,16 @@ data Command = ListStories Story.State
              | ShowStory StoryId
              deriving (Show)
 
+data ResultType = SingleEntry
+                | MultipleEntry
+
+class HasResultType a where
+  commandType :: a -> ResultType
+
+instance HasResultType Command where
+  commandType (ListStories _) = MultipleEntry
+  commandType (ShowStory _) = SingleEntry
+
 instance IsRequestParams Command where
   toRequestParams (ListStories state) =
     RequestParameters { resource = "/stories", filters = [filters] }

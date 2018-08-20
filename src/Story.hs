@@ -13,6 +13,7 @@ data Story = Story { id :: Int
                    , estimate :: Maybe Int
                    , current_state :: State
                    , name :: String
+                   , description :: String
                    } deriving (Generics.Generic)
 
 instance Show Story where
@@ -25,6 +26,17 @@ instance Show Story where
       storyEstimate = (Maybe.fromMaybe "-" (fmap show $ estimate story))
 
 instance JSON.FromJSON Story
+
+showDetails :: Story -> String
+showDetails story =
+  Printf.printf "[%-8s] #%s – %-64s (%s)\n\n%s\n" storyType storyId storyName storyEstimate storyDescription
+  where
+    storyId          = show . Story.id $ story
+    storyType        = show . story_type $ story
+    storyName        = name story
+    storyEstimate    = (Maybe.fromMaybe "-" (fmap show $ estimate story))
+    storyDescription = description story
+
 
 
 {- Type -}
