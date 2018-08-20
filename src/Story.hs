@@ -7,7 +7,8 @@ import qualified Text.Printf as Printf
 import qualified Data.Text as Text
 
 {- Story -}
-data Story = Story { kind :: String
+data Story = Story { id :: Int
+                   , kind :: String
                    , story_type :: Type
                    , estimate :: Maybe Int
                    , current_state :: State
@@ -16,8 +17,9 @@ data Story = Story { kind :: String
 
 instance Show Story where
   show story =
-    Printf.printf "[%-8s] %-64s (%s)" storyType storyName storyEstimate
+    Printf.printf "[%-8s] #%s – %-64s (%s)" storyType storyId storyName storyEstimate
     where
+      storyId       = show . Story.id $ story
       storyType     = show . story_type $ story
       storyName     = name story
       storyEstimate = (Maybe.fromMaybe "-" (fmap show $ estimate story))
